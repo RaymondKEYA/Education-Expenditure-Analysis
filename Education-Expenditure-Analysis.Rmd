@@ -1,0 +1,1130 @@
+---
+title: "Education Expenditure Analysis"
+Author: AMR INTERNATIONAL
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    code_folding: hide
+    theme: united
+    highlight: tango
+    number_sections: true
+    fig_caption: true
+    keep_md: true
+    self_contained: true
+    css: style.css
+    code_download: true
+  officedown::rdocx_document:
+    toc: true
+---
+
+This is a quick view of the education expenditure across the globe. We try to see where we seat between some ambitious goals of the SDG 4 we've planned to achieve in 2030 and where we were in 2015.
+
+## Loading data
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+library(tidyverse)
+library(plotly)
+df1 <- readxl::read_excel("data/SDG_Sept2023_long.xlsx")
+df1 <- df1 |>
+  #mutate(Year = as_date(Year)) |>
+  as_tibble()
+df2 <- readxl::read_excel("data/economy-class.xlsx")
+df2 <- df2 |>
+  as_tibble()
+
+df <- inner_join(df1, df2, by = "Country")
+openxlsx::write.xlsx(df, "data/tidy/eduexp_df.xlsx")
+df |>
+  head() |>
+  knitr::kable()
+```
+
+## Analysis of the expenditure on education as a percentage of total government expenditure (%)
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+educexp_df <- df |>
+  filter(
+    Year %in% seq(2015, 2022),
+    `Indicator Name` == "Expenditure on education as a percentage of total government expenditure (%)"
+  ) 
+openxlsx::write.xlsx(educexp_df, "data/tidy/educexp_df.xlsx")
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+regeducexp_df <- educexp_df |>
+  group_by(region, Year) |>
+  summarize(median_value = median(Value)) #|>
+  # mutate(target = 4)
+#view(regeducexp_df)
+openxlsx::write.xlsx(regeducexp_df, "data/tidy/regeducexp_df.xlsx")
+#glimpse(regeducexp_df)
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+regmedian <- regeducexp_df |>
+  group_by(Year) |>
+  summarize(crossregmed = median(median_value))
+```
+
+##### **Figure 1:** Median value trends of the expenditure on education as a percentage of total government expenditure (%) for different region from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
+ggplotly(
+  ggplot(
+    regeducexp_df,
+    aes(
+      x = Year,
+      y = median_value,
+      color = region,
+      # linetype = region
+    )
+  ) +
+    geom_line(size = .9) +
+    geom_line(
+      data = regmedian,
+      aes(x = Year, y = crossregmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1
+    ) +
+     geom_text(
+      aes(x = 2019, y = 0, label = "■ ■ ■ Cross-regional median value"), 
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+     scale_color_manual(
+      values = c(
+        "dodgerblue", "orange3", "purple3", "brown3", "darkblue", "darkgreen",  "pink1"
+      )
+    ) +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value"
+    )
+)
+```
+
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
+
+The graph above shows the median value trends of the **expenditure on education as a percentage of total government expenditure (%)** for different regions from 2015 to 2022. The trend has been an overall fall down. The cross-regional expenditure on education as a percentage of total government (%) has diminished by **3.5%** points between 2016 and 2022 showing that priorities are being given to others sector at the spend of the education one. The decline has been most pronounced in **East Asia & Pacific** and **Middle East & North Africa**. Only the **Europe & Central Asia** has experienced a slight increase of its expenditure on education as a percentage of total government **(0.85%)**.
+
+```         
+Here are some meaningful insights that can be gleaned from this graph:
+
+-   The decline in expenditure on education as a percentage of total government expenditure is a worrying trend, as it suggests that governments are prioritizing other sectors over education. This could have negative consequences for the long-term development of these countries, as education is essential for economic growth and social progress.
+
+-   The COVID-19 pandemic may have had an impact on the decline in expenditure on education, as governments have been forced to spend more on healthcare and other essential services. However, it is also possible that the decline was due to other factors, such as austerity measures or a lack of political commitment to education.
+
+-   The fact that only **Europe & Central Asia** experienced an increase in expenditure on education as a percentage of total government expenditure suggests that this region is more committed to education than other regions. This could be due to a number of factors, such as a strong cultural emphasis on education or a belief that education is essential for economic competitiveness.
+
+It is important to note that this graph only shows the median values for each region. This means that there is a lot of variation within each region. For example, some countries may have increased their expenditure on education as a percentage of total government expenditure, even though the median value for their region has declined.
+
+Overall, this graph is a worrying sign that education is being neglected by many governments. It is important to remember that education is an essential investment for the future, and governments should be doing more to support it.
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+ecozeducexp_df <- educexp_df |>
+  group_by(`Income group`, Year) |>
+  summarize(median_value = median(Value)) #|>
+  # select(Year, Region, Value)
+#view(ecoz_df)
+openxlsx::write.xlsx(ecozeducexp_df, "data/tidy/ecozeducexp_df.xlsx")
+```
+
+```{r, echo=FALSE}
+ecozmedian <- ecozeducexp_df |>
+  group_by(Year) |>
+  summarize(crossecozmed = median(median_value))
+```
+
+##### **Figure 2:** Median value trends of the expenditure on education as a percentage of total government expenditure (%) for different Income groups from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+ggplotly(
+  ggplot(
+    ecozeducexp_df,
+    aes(
+      x = Year,
+      y = median_value,
+      color = `Income group`,
+      # linetype = `Income group`
+    )
+  ) +
+    geom_line(size = 0.9) +
+    geom_line(
+      data = ecozmedian,
+      aes(x = Year, y = crossecozmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1
+    ) +
+     geom_text(
+      aes(x = 2019, y = 0, label = "■ ■ ■ Cross-income group median value"), 
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+    scale_color_manual(
+      values = c(
+        "darkblue", "orange3", "purple3", "darkgreen", "brown"
+      )
+    ) +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value"
+    )
+)
+```
+
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
+
+**The line graph above shows the median value trends of the expenditure on education as a percentage of total government expenditure (%) for different Income groups from 2015 to 2022.**
+
+-   The cross-regional expenditure on education as a percentage of total government (%) has declined by **2.1** percentage points between 2016 and 2022. This suggests that education is being given a lower priority than other sectors, such as health or infrastructure etc.
+-   The decline in education spending has been most pronounced in Lower middle income countries. This could be due to a number of factors, such as these countries have been disproportionately affected by the COVID-19 pandemic or having weaker economic growth.
+-   The decline in education spending is more pronounced after 2018. This suggests that the COVID-19 pandemic might has had a significant impact on education spending.
+-   The expenditure on education as a percentage of total government expenditure (%) is an indicator of the SDGs 4 to appreciate the priority given by countries to education. The decline in education spending suggests that countries are not giving education the priority it deserves.
+
+```         
+Here are some of the important figures from the graph:
+
+-   The cross-regional median expenditure on education as a percentage of total government expenditure (%) in 2015 was 15.9%.
+-   The cross-regional median expenditure on education as a percentage of total government expenditure (%) in 2022 was 13.8%.
+-   The largest decline in education spending was in Lower middle income countries, where the median expenditure fell from 16.3% in 2016 to 13.1% in 2022.
+
+Overall, the graph shows that education spending is declining as a percentage of total government expenditure. This is a worrying trend, as education is essential for economic development and poverty reduction. The COVID-19 pandemic has exacerbated this trend, and it is important that countries take steps to increase education spending in order to meet the SDGs 4.
+
+Here are some additional thoughts on the graph:
+
+-   It is important to note that the graph only shows median values. This means that there is a lot of variation in education spending between countries within each income group.
+-   The graph does not show the reasons for the decline in education spending. More research is needed to understand why education spending is declining and what can be done to reverse this trend.
+```
+
+## Analysis of Government expenditure on education as a percentage of GDP (%)
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+govexp_df <- df |>
+  filter(
+    Year %in% seq(2015, 2022),
+    `Indicator Name` == "Government expenditure on education as a percentage of GDP (%)"
+  )
+openxlsx::write.xlsx(govexp_df, "data/tidy/govexp_df.xlsx")
+# glimpse(govexp_df)
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+govexpreg_df <- govexp_df |>
+  group_by(region, Year) |>
+  summarize(median_value = median(Value)) |>
+  mutate(target = 4)
+  # select(Year, Region, Value)
+#view(reg_df)
+openxlsx::write.xlsx(govexpreg_df, "data/tidy/govexpreg_df.xlsx")
+```
+
+```{r, echo=FALSE}
+regmedian <- govexpreg_df |>
+  group_by(Year) |>
+  summarize(crossregmed = median(median_value))
+```
+
+##### **Figure 3:** Median value trends of the government expenditure on education as percentage of GDP for different region from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+ggplotly(
+  ggplot(
+    govexpreg_df,
+    aes(
+      x = Year,
+      y = median_value,
+      color = region
+      # linetype = region
+    )
+  ) +
+    geom_line(size = .8) +
+    geom_line(
+      data = regmedian,
+      aes(x = Year, y = crossregmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1
+    ) +
+     geom_text(
+      aes(x = 2018, y = 0.5, label = "■ ■ ■ Cross-regional median value"),
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+    scale_color_manual(
+      values = c(
+        "dodgerblue", "orange3", "purple3", "brown4", "darkblue", "darkgreen",  "pink3"
+      )
+    ) +
+    geom_line(
+      aes(x = Year, y = target),
+      color = "red",
+      size = 1,
+      linetype = "dotted"
+    ) +
+    geom_text(
+      aes(x = 2018, y = 0, label = "■ ■ ■ Education 2030 FFA Target"), 
+      hjust = 0.5, vjust = -0.5, color = "red"
+    ) +
+    # scale_color_manual(values = c()) +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value"
+    )
+)
+```
+
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
+
+**The line graph above shows the median value trends of the government expenditure on education as percentage of GDP for different region from 2015 to 2022.**
+
+-   **Overall downward trend:** The cross-regional median value decreased from 4.6% in 2015 to 3.2% in 2022. This means that government spending on education as a percentage of GDP has declined globally.
+-   **Regional variations:** The decline has been most pronounced in North America and the Middle East & North Africa, with decreases of 1.7% and 1.6% points, respectively. Europe & Central Asia is the only region that has seen a slight increase (0.4% points).
+-   **Education 2030 FFA target:** In 2022, all regions except Europe & Central Asia fell below the 4% Education 2030 FFA target for government expenditure on education as a percentage of GDP. The cross-regional median value was 3.2%, which is significantly below the target.
+-   **Possible impact of COVID-19:** The downward trend began in 2016 and became more pronounced after 2019. This suggests that the COVID-19 pandemic may have had a significant impact on government spending on education.
+-   **Sub-Saharan Africa:** This region has consistently fallen below the 4% Education 2030 FFA target, despite a slight increase between 2015 and 2020.
+-   **South Asia:** This region reached the 4% target in 2020 after a significant upward trend, but has since fallen back below the target in 2021 and 2022, with a particularly sharp decline in 2022.
+
+```         
+Here are some additional important figures to note:
+
+* The median government expenditure on education as a percentage of GDP in 2022 was 3.2%.
+* The Education 2030 FFA target is 4%.
+* The largest decline in government expenditure on education as a percentage of GDP was in North America (1.7% points).
+* The only region to increase its government expenditure on education as a percentage of GDP was Europe & Central Asia (0.4% points).
+
+Overall, the graph shows a concerning trend of declining government spending on education across most regions. The COVID-19 pandemic may have played a role in this decline, but further research is needed to determine the full extent of its impact.
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+ecozgovexp_df <- govexp_df |>
+  group_by(`Income group`, Year) |>
+  summarize(median_value = median(Value)) |>
+  mutate(target = 4)
+#view(ecoz_df)
+openxlsx::write.xlsx(ecozgovexp_df, "data/tidy/ecozgovexp_df.xlsx")
+```
+
+```{r, echo=FALSE}
+ecozmedian <- ecozgovexp_df |>
+  group_by(Year) |>
+  summarize(crossecozmed = median(median_value))
+# ecozmedian
+```
+
+##### **Figure 4:** Median value trends of the government expenditure on education as percentage of GDP for different Income groups from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+ggplotly(
+  ggplot(
+    ecozgovexp_df,
+    aes(
+      x = Year,
+      y = median_value,
+      color = `Income group`
+    )
+  ) +
+    geom_line(
+      data = ecozmedian,
+      aes(x = Year, y = crossecozmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1
+    ) +
+     geom_text(
+      aes(x = 2018, y = 0, label = "■ ■ ■ Cross-income group median value"), 
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    geom_line(aes(), size = 0.8) +
+    # geom_point(size = 3.5) +
+    geom_line(
+      aes(x = Year, y = target),
+      color = "red",
+      size = 1,
+      linetype = "dotted"
+    ) +
+    geom_text(
+      aes(x = 2018, y = 0.5, label = "■ ■ ■ Education 2030 FFA Target"), 
+      hjust = 0.5, vjust = -0.5, color = "red"
+    ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+    scale_color_manual(
+      values = c(
+        "darkblue", "orange3", "purple3", "red4", "brown"
+      )
+    ) +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value"
+    )
+)
+```
+
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
+
+**The line graph above shows the median value trends of the government expenditure on education as percentage of GDP for different Income groups from 2015 to 2022.**
+
+**Overall downward trend:**
+
+-   The median government expenditure on education as a percentage of GDP has declined from 4.4% in 2015 to 3.6% in 2022. This means that education is getting a smaller share of government budgets across the globe.
+-   This decline is particularly concerning because education is crucial for economic development, poverty reduction, and social progress.
+
+**Regional variations:**
+
+-   The decline has been most pronounced in high-income countries, with a decrease of 1.1 percentage points since 2015. This is surprising, as these countries tend to have more resources available for education.
+-   Upper-middle-income countries are the only ones that still meet the Education 2030 FFA target of 4% spending on education.
+-   Low-income countries have consistently fallen below the target, despite a small increase between 2015 and 2021. However, their spending has also fallen back below 2015 levels since 2022.
+
+**Possible impact of COVID-19:**
+
+-   The downward trend in education spending began in 2016 and became more pronounced after 2019. This coincides with the COVID-19 pandemic, suggesting that it may have played a significant role in the decline.
+-   Governments may have been forced to cut education spending to deal with the economic and health challenges of the pandemic.
+
+**Important figures:**
+
+-   The median government expenditure on education as a percentage of GDP in 2022 was 3.6%.
+-   The Education 2030 FFA target is 4%.
+-   The largest decline in government expenditure on education as a percentage of GDP was in high-income countries (1.1 percentage points).
+
+**Call to action:**
+
+This downward trend in education spending is alarming and needs to be reversed. Governments should prioritize education spending and ensure that it meets the Education 2030 FFA target provided we are almost in half way. This will require investing more resources in education, even in the face of other challenges. Investing in education is not just an expense; it is an investment in the future.
+
+## Analysis of the out-of-school rate for children of primary school age, both sexes (%)
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+osr_df <- df |>
+  filter(
+    Year %in% seq(2015, 2021),
+    `Indicator Name` == "Out-of-school rate for children of primary school age, both sexes (%)"
+  )
+openxlsx::write.xlsx(osr_df, "data/tidy/osr_df.xlsx")
+# glimpse(osr_df)
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+regosr_df <- osr_df |>
+  group_by(region, Year) |>
+  summarize(median_value = median(Value)) |>
+  mutate(target = 0)
+  # select(Year, Region, Value)
+#view(reg_df)
+openxlsx::write.xlsx(regosr_df, "data/tidy/regosr_df.xlsx")
+```
+
+```{r, echo=FALSE}
+regmedian <- regosr_df |>
+  group_by(Year) |>
+  summarize(crossregmed = median(median_value))
+# ecozmedian
+```
+
+##### **Figure 5:** Median value of the out-of-school rate for children of primary school age for different region from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+ggplotly(
+  ggplot(
+    regosr_df,
+    aes(
+      x = Year,
+      y = median_value,
+      color = region
+    )
+  ) +
+    geom_line(size = .8) +
+    geom_line(
+      data = regmedian,
+      aes(x = Year, y = crossregmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1
+    ) +
+     geom_text(
+      aes(x = 2018, y = 16, label = "■ ■ ■ Cross-regional median value"), 
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+    geom_segment(
+      aes(x = 2021, xend = 2021, y = 0, yend = 18),
+      color = "red",
+      size = 1,
+      linetype = "dotted"
+    )  +
+    scale_color_manual(
+      values = c(
+        "dodgerblue", "orange3", "purple3", "brown4", "darkblue", "darkgreen",  "pink3"
+      )
+    )  +
+    geom_text(
+      aes(x = 2019, y = 8,
+          label = "The gap between the target\n and Sub-Saharan Africa's\n value in 2021 is 18.4"
+        ), 
+      hjust = 0.5, vjust = -0.5, color = "red"
+    ) +
+    geom_line(
+      aes(x = Year, y = target),
+      color = "darkgreen",
+      size = 1,
+      linetype = "dotted"
+    ) +
+    geom_text(
+      aes(x = 2019, y = -2, label = "■ ■ ■ Education 2030 FFA Target"), 
+      hjust = 0.5, vjust = -0.5, color = "darkgreen"
+    ) +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value",
+      caption = "Source: http://sdg4-data.uis.unesco.org/"
+    ) 
+)
+```
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
+
+**The line graph above shows the median value trends of the Out-of-school rate for children of primary school age, both sexes for different region from 2015 to 2022.**
+
+Here are some of the key insights we can glean from this data:
+
+* **Overall increase in out-of-school children:** The cross-regional median value increased from 2.6% in 2015 to 4.4% in 2022, exceeding the Education 2030 FFA target of 0%. This means that on average, more children are out of school now than in 2015.
+* **Disparities between regions:** The increase has been most pronounced in Sub-Saharan Africa, where the median value increased by 3.1 percentage points between 2015 and 2022. The gap between the target and Sub-Saharan Africa's value in 2021 is a significant 18.4 percentage points.
+* The Sub-Saharan African, South Asia and Latin America & Caribbean regions have consistently evolded overhead the cross-regional median value. This suggests that these regions are not making progress towards achieving universal primary education.
+* **Potential causes:** The COVID-19 pandemic may have played a role in this increase, as many schools were closed during the pandemic. However, other factors, such as poverty or conflict, may also have contributed.
+* **Importance of education:** Education is essential for economic development and poverty reduction. The increasing out-of-school rate is a worrying trend that could have negative consequences for these regions in the long term.
+
+Here are some additional thoughts on the data:
+
+* The graph only shows the median values for each region. It would be interesting to see the full range of data for each region to get a better sense of the variability within each region.
+* The graph does not provide any information on the reasons why children are out of school. It would be helpful to have more data on this to better understand the problem and develop effective interventions.
+* Despite the overall increase, there may be some regions or countries that are making progress in reducing their out-of-school rates. It is important to identify and share best practices from these success stories.
+
+Overall, the line graph highlights a serious problem that needs to be addressed. More research is needed to understand the causes of the increase in out-of-school children, and effective interventions are needed to get more children back into school.
+
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+ecozosr_df <- osr_df |>
+  group_by(`Income group`, Year) |>
+  summarize(median_value = median(Value)) |>
+  mutate(target = 0)
+  # select(Year, Region, Value)
+#view(ecoz_df)
+openxlsx::write.xlsx(ecozosr_df, "data/tidy/ecozosr_df.xlsx")
+```
+
+```{r, echo=FALSE}
+ecozmedian <- ecozosr_df |>
+  group_by(Year) |>
+  summarize(crossecozmed = median(median_value))
+# ecozmedian
+```
+
+##### **Figure 6:** Median value of the out-of-school rate for children of primary school age for different Income groups from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+ggplotly(
+  ggplot(
+    ecozosr_df,
+    aes(
+      x = Year,
+      y = median_value,
+      color = `Income group`
+    )
+  ) +
+    geom_line(size = .8) +
+    geom_line(
+      data = ecozmedian,
+      aes(x = Year, y = crossecozmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1
+    ) +
+     geom_text(
+      aes(x = 2018, y = 10, label = "■ ■ ■ Cross-income group median value"), 
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+    geom_segment(
+      aes(x = 2021, xend = 2021, y = 0, yend = 25),
+      color = "red",
+      size = 1,
+      linetype = "dotted"
+    )  +
+    scale_color_manual(
+      values = c(
+        "pink3","purple3" , "darkblue", "orange3"
+      )
+    ) +
+    geom_text(
+      aes(x = 2019, y = 17,
+          label = "The gap between the target\n and low income countries'\n value in 2021 is 24.8"
+        ), 
+      hjust = 0.5, vjust = -0.5, color = "red"
+    ) +
+    geom_line(
+      aes(x = Year, y = target),
+      color = "darkgreen",
+      size = 1,
+      linetype = "dotted"
+    ) +
+    geom_text(
+      aes(x = 2019, y = -2, label = "■ ■ ■ Education 2030 FFA Target"), 
+      hjust = 0.5, vjust = -0.5, color = "darkgreen"
+    ) +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value"
+    )
+)
+```
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
+
+**The line graph above shows the median value trends of the out-of-school rate for children of primary school age for different Income groups from 2015 to 2022.**
+
+Here are some of the key insights we can glean from this data:
+
+* **Overall increase in out-of-school children:** The median value increased from 4.8% in 2015 to 5.5% in 2022, exceeding the Education 2030 FFA target of 0%. This means that on average, more children are out of school now than in 2015.
+* **Disparities between income groups:** The increase has been most pronounced in low-income countries, where the median value increased by 3.1 percentage points between 2015 and 2022. The gap between the target and low income countries' value in 2021 is a significant 24.8 percentage points.
+* **Potential causes:** The COVID-19 pandemic may have played a role in this increase, as many schools were closed during the pandemic. However, other factors, such as poverty or conflict, may also have contributed.
+* **Importance of education:** Education is essential for economic development and poverty reduction. The increasing out-of-school rate is a worrying trend that could have negative consequences for these regions in the long term.
+
+Here are some additional thoughts on the data:
+
+* The graph only shows the median values for each region. It would be interesting to see the full range of data for each region to get a better sense of the variability within each region.
+* The graph does not provide any information on the reasons why children are out of school. It would be helpful to have more data on this to better understand the problem and develop effective interventions.
+* Despite the overall increase, there may be some regions or countries that are making progress in reducing their out-of-school rates. It is important to identify and share best practices from these success stories.
+
+Overall, the line graph highlights a serious problem that needs to be addressed. More research is needed to understand the causes of the increase in out-of-school children, and effective interventions are needed to get more children back into school.
+
+
+## Analysis of the Completion rate, primary education, both sexes (%)
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+crpeduc_df <- df |>
+  filter(
+    Year %in% seq(2015, 2021),
+    `Indicator Name` == "Completion rate, primary education, both sexes (%)"
+  ) 
+openxlsx::write.xlsx(crpeduc_df, "data/tidy/crpeduc_df.xlsx")
+# glimpse(osr_df)
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+regcrpeduc_df <- crpeduc_df |>
+  group_by(region, Year) |>
+  summarize(median_value = median(Value)) |>
+  mutate(target = 100) #|>
+  # select(Year, Region, Value)
+#view(reg_df)
+openxlsx::write.xlsx(regcrpeduc_df, "data/tidy/regcrpeduc_df.xlsx")
+```
+
+```{r, echo=FALSE}
+regmedian <- regcrpeduc_df |>
+  group_by(Year) |>
+  summarize(crossregmed = median(median_value))
+# ecozmedian
+```
+
+##### **Figure 7:** Median value trend of the ompletion rate, primary education, for different region from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+ggplotly(
+  regcrpeduc_df |>
+    # filter(
+    #   region %in% c(
+    #     "Europe & Central Asia", "Latin America & Caribbean", "Sub-Saharan Africa"
+    #   )
+    # ) |>
+    filter(!(region == "South Asia")) |>
+  ggplot(
+    aes(
+      x = Year,
+      y = median_value,
+      color = region
+    )
+  ) +
+    geom_line(size = .8) +
+    geom_line(
+      data = regmedian,
+      aes(x = Year, y = crossregmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1.2
+    ) +
+     geom_text(
+      aes(x = 2018, y = 0, label = "■ ■ ■ Cross-regional median value"), 
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+    geom_segment(
+      aes(x = 2021, xend = 2021, y = 73.14, yend = 100),
+      color = "red",
+      size = 1,
+      linetype = "dotted"
+    )  +
+    geom_text(
+      aes(x = 2018, y = 72, 
+          label = "The gap between the target\n and Sub-Saharan Africa's\n value in 2021 is 26.9"
+        ),
+      hjust = 0.5, vjust = -0.5, color = "red"
+    ) +
+    geom_line(
+      aes(x = Year, y = target),
+      color = "darkgreen",
+      size = 1.2,
+      linetype = "dotted"
+    ) +
+    geom_text(
+      aes(x = 2018, y = 15, label = "■ ■ ■ Education 2030 FFA Target"), 
+      hjust = 0.5, vjust = -0.5, color = "darkgreen"
+    ) +
+    scale_color_manual(
+      values = c(
+        "darkblue", "orange3", "purple3", "brown4", "darkgreen", "pink3", "dodgerblue" 
+      )
+    )  +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value",
+      caption = "Source: http://sdg4-data.uis.unesco.org/"
+    ) 
+)
+```
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
+
+
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+ecozcrpeduc_df <- crpeduc_df |>
+  group_by(`Income group`, Year) |>
+  summarize(median_value = median(Value)) |>
+  mutate(target = 100)
+  # select(Year, Region, Value)
+#view(ecoz_df)
+openxlsx::write.xlsx(ecozcrpeduc_df, "data/tidy/ecozcrpeduc_df.xlsx")
+```
+
+```{r echo=FALSE}
+ecozmedian <- ecozcrpeduc_df |>
+  group_by(Year) |>
+  summarize(crossecozmed = median(median_value))
+# ecozmedian
+```
+
+##### **Figure 8:** Median value trend of the ompletion rate, primary education, for different Income groups from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+ggplotly(
+  ggplot(
+    ecozcrpeduc_df,
+    aes(
+      x = Year,
+      y = median_value,
+      color = `Income group`
+    )
+  ) +
+    geom_line(size = .8) +
+    geom_line(
+      data = ecozmedian,
+      aes(x = Year, y = crossecozmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1
+    ) +
+     geom_text(
+      aes(x = 2018, y = 0, label = "■ ■ ■ Cross-income group median value"), 
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+    geom_segment(
+      aes(x = 2021, xend = 2021, y = 49.68, yend = 100),
+      color = "red",
+      size = 1,
+      linetype = "dotted"
+    )  +
+    geom_text(
+      aes(x = 2018, y = 65,
+      label = "The gap between the target\n and low income countries'\n value in 2021 is 50.3"),
+      hjust = 0.5, vjust = -0.5, color = "red"
+    ) +
+    geom_line(
+      aes(x = Year, y = target),
+      color = "darkgreen",
+      size = 1,
+      linetype = "dotted"
+    ) +
+    geom_text(
+      aes(x = 2018, y = 15, label = "■ ■ ■ Education 2030 FFA Target"), 
+      hjust = 0.5, vjust = -0.5, color = "darkgreen"
+    ) +
+    scale_color_manual(
+      values = c(
+        "darkgreen","purple3" , "darkblue", "orange3"
+      )
+    ) +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value"
+    )
+)
+```
+
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
+
+## Analysis of the Net enrolment rate, early childhood education, both sexes (%)
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+nereceduc_df <- df |>
+  filter(
+    Year %in% seq(2015, 2021),
+    `Indicator Name` == "Net enrolment rate, early childhood education, both sexes (%)"
+  )
+openxlsx::write.xlsx(nereceduc_df, "data/tidy/nereceduc_df.xlsx")
+# glimpse(osr_df)
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+regnereceduc_df <- nereceduc_df |>
+  group_by(region, Year) |>
+  summarize(median_value = median(Value)) |>
+  mutate(target = 100)
+  # select(Year, Region, Value)
+#view(reg_df)
+openxlsx::write.xlsx(regnereceduc_df, "data/tidy/regnereceduc_df.xlsx")
+```
+
+```{r echo=FALSE}
+regmedian <- regnereceduc_df |>
+  group_by(Year) |>
+  summarize(crossregmed = median(median_value))
+# ecozmedian
+```
+
+##### **Figure 9:** Median value trend of the Net enrolment rate, early childhood education, for different region from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+ggplotly(
+  regnereceduc_df |>
+    # filter(
+    #   region %in% c(
+    #     "Europe & Central Asia", "Latin America & Caribbean", "Sub-Saharan Africa"
+    #   )
+    # ) |>
+  ggplot(
+    aes(
+      x = Year,
+      y = median_value,
+      color = region
+    )
+  ) +
+    geom_line(size = .8) +
+    geom_line(
+      data = regmedian,
+      aes(x = Year, y = crossregmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1
+    ) +
+     geom_text(
+      aes(x = 2018, y = 0, label = "■ ■ ■ Cross-regional median value"), 
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    geom_line(
+      aes(x = Year, y = target),
+      color = "darkgreen",
+      size = 1,
+      linetype = "dotted"
+    ) +
+    geom_text(
+      aes(x = 2018, y = 10, label = "■ ■ ■ Education 2030 FFA Target"), 
+      hjust = 0.5, vjust = -0.5, color = "darkgreen"
+    ) +
+    geom_segment(
+      aes(x = 2021, xend = 2021, y = 44.3, yend = 100),
+      color = "red",
+      size = 1,
+      linetype = "dotted"
+    )  +
+    geom_text(
+      aes(x = 2018, y = 85,
+      label = "The gap between the target\n and the cross-regional's\n value in 2021 is 44"),
+      hjust = 0.5, vjust = -0.5, color = "red"
+    ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+    scale_color_manual(
+      values = c(
+        "darkblue", "orange3", "purple3", "brown4", "darkgreen", "pink3", "dodgerblue"
+      )
+    ) +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value",
+      caption = "Source: http://sdg4-data.uis.unesco.org/"
+    ) 
+)
+```
+
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+ecoznereceduc_df <- nereceduc_df |>
+  group_by(`Income group`, Year) |>
+  summarize(median_value = median(Value)) |>
+  mutate(target = 100)
+  # select(Year, Region, Value)
+#view(ecoz_df)
+openxlsx::write.xlsx(ecoznereceduc_df, "data/tidy/ecoznereceduc_df.xlsx")
+```
+
+```{r echo=FALSE}
+ecozmedian <- ecoznereceduc_df |>
+  group_by(Year) |>
+  summarize(crossecozmed = median(median_value))
+# ecozmedian
+```
+
+##### **Figure 10:** Median value trend of the Net enrolment rate, early childhood education, for different Income groups from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+ggplotly(
+  ggplot(
+    ecoznereceduc_df,
+    aes(
+      x = Year,
+      y = median_value,
+      color = `Income group`
+    )
+  ) +
+    geom_line(size = .8) +
+    geom_line(
+      aes(x = Year, y = target),
+      color = "darkgreen",
+      size = 1.2,
+      linetype = "dotted"
+    ) +
+    geom_text(
+      aes(x = 2018, y = 105, label = "■ ■ ■ Education 2030 FFA Target"), 
+      hjust = 0.5, vjust = -0.5, color = "darkgreen"
+    ) +
+    geom_line(
+      data = ecozmedian,
+      aes(x = Year, y = crossecozmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1.2
+    ) +
+     geom_text(
+      aes(x = 2018, y = 0, label = "■ ■ ■ Cross-income group median value"), 
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    geom_segment(
+      aes(x = 2021, xend = 2021, y = 35.0375, yend = 100),
+      color = "red",
+      size = 1,
+      linetype = "dotted"
+    )  +
+    geom_text(
+      aes(x = 2018, y = 85,
+      label = "The gap between the target\n and the cross-economic's\n value in 2021 is 65"),
+      hjust = 0.5, vjust = -0.5, color = "red"
+    ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+    scale_color_manual(
+      values = c(
+        "red4","purple3" , "darkblue", "orange3"
+      )
+    ) +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value"
+    )
+)
+```
+
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
+
+## Analysis of the Net enrolment rate, pre-primary, both sexes (%)
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+nerpprim_df <- df |>
+  filter(
+    Year %in% seq(2015, 2021),
+    `Indicator Name` == "Net enrolment rate, pre-primary, both sexes (%)"
+  )
+openxlsx::write.xlsx(nerpprim_df, "data/tidy/nerpprim_df.xlsx")
+# glimpse(osr_df)
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+regnerpprim_df <- nerpprim_df |>
+  group_by(region, Year) |>
+  summarize(median_value = median(Value)) |>
+  mutate(target = 100)
+  # select(Year, Region, Value)
+#view(reg_df)
+openxlsx::write.xlsx(regnerpprim_df, "data/tidy/regnerpprim_df.xlsx")
+```
+
+```{r echo=FALSE}
+regmedian <- regnerpprim_df |>
+  group_by(Year) |>
+  summarize(crossregmed = median(median_value))
+# ecozmedian
+```
+
+##### **Figure 11:** Median value trend of the Net enrolment rate, pre-primary, for different region from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+ggplotly(
+  regnerpprim_df |>
+    # filter(
+    #   region %in% c(
+    #     "Europe & Central Asia", "Latin America & Caribbean", "Sub-Saharan Africa"
+    #   )
+    # ) |>
+  ggplot(
+    aes(
+      x = Year,
+      y = median_value,
+      color = region
+    )
+  ) +
+    geom_line(size = .8) +
+    geom_line(
+      data = regmedian,
+      aes(x = Year, y = crossregmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1.2
+    ) +
+     geom_text(
+      aes(x = 2018, y = 0, label = "■ ■ ■ Cross-regional median value"), 
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    geom_line(
+      aes(x = Year, y = target),
+      color = "darkgreen",
+      size = 1.2,
+      linetype = "dotted"
+    ) +
+    geom_text(
+      aes(x = 2018, y = 105, label = "■ ■ ■ Education 2030 FFA Target"), 
+      hjust = 0.5, vjust = -0.5, color = "darkgreen"
+    ) +
+    geom_segment(
+      aes(x = 2021, xend = 2021, y = 53.84, yend = 100),
+      color = "red",
+      size = 1,
+      linetype = "dotted"
+    )  +
+    # geom_text(
+    #   aes(x = 2018, y = 85,
+    #   label = "The gap between the target\n and the cross-regional's\n value in 2021 is 44"),
+    #   hjust = 0.5, vjust = -0.5, color = "red"
+    # ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+    scale_color_manual(
+      values = c(
+        "darkblue", "orange3", "purple3", "brown4", "darkgreen", "pink3", "dodgerblue"
+      )
+    ) +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value",
+      caption = "Source: http://sdg4-data.uis.unesco.org/"
+    ) 
+)
+```
+
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+ecoznerpprim_df <- nerpprim_df |>
+  group_by(`Income group`, Year) |>
+  summarize(median_value = median(Value)) |>
+  mutate(target = 100)
+  # select(Year, Region, Value)
+#view(ecoz_df)
+openxlsx::write.xlsx(ecoznerpprim_df, "data/tidy/ecoznerpprim_df.xlsx")
+```
+
+```{r echo=FALSE}
+ecozmedian <- ecoznerpprim_df |>
+  group_by(Year) |>
+  summarize(crossecozmed = median(median_value))
+# ecozmedian
+```
+
+##### **Figure 12:** Median value trend of the Net enrolment rate, pre-primary, for different Income groups from 2015 to 2022.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+ggplotly(
+  ggplot(
+    ecoznereceduc_df,
+    aes(
+      x = Year,
+      y = median_value,
+      color = `Income group`
+    )
+  ) +
+    geom_line(size = .8) +
+    geom_line(
+      aes(x = Year, y = target),
+      color = "darkgreen",
+      size = 1.2,
+      linetype = "dotted"
+    ) +
+    geom_text(
+      aes(x = 2018, y = 105, label = "■ ■ ■ Education 2030 FFA Target"), 
+      hjust = 0.5, vjust = -0.5, color = "darkgreen"
+    ) +
+    geom_line(
+      data = ecozmedian,
+      aes(x = Year, y = crossecozmed),
+      linetype = "dotted",
+      color = "black",
+      size = 1.2
+    ) +
+     geom_text(
+      aes(x = 2018, y = 0, label = "■ ■ ■ Cross-income group median value"), 
+      hjust = 0.5, vjust = -0.5, color = "black"
+    ) +
+    geom_segment(
+      aes(x = 2021, xend = 2021, y = 52.5350, yend = 100),
+      color = "red",
+      size = 1,
+      linetype = "dotted"
+    )  +
+    geom_text(
+      aes(x = 2018, y = 85,
+      label = "The gap between the target\n and the cross-economic's\n value in 2021 is 47.5"),
+      hjust = 0.5, vjust = -0.5, color = "red"
+    ) +
+    theme(plot.background = element_rect(fill = "gray")) +
+    scale_color_manual(
+      values = c(
+        "red4","purple3" , "darkblue", "orange3"
+      )
+    ) +
+    labs(
+      #title = "Smooth Line Plot with Legend and Markers",
+      x = "Year",
+      y = "Median Value"
+    )
+)
+```
+
+##### **Source : <http://sdg4-data.uis.unesco.org/>**
