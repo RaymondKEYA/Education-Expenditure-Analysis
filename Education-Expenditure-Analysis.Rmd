@@ -142,7 +142,7 @@ ecozmedian <- ecozeducexp_df |>
 
 ##### **Figure 2:** Median value trends of the expenditure on education as a percentage of total government expenditure (%) for different Income groups from 2015 to 2022.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 ggplotly(
   ggplot(
     ecozeducexp_df,
@@ -233,7 +233,7 @@ regmedian <- govexpreg_df |>
 
 ##### **Figure 3:** Median value trends of the government expenditure on education as percentage of GDP for different region from 2015 to 2022.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 ggplotly(
   ggplot(
     govexpreg_df,
@@ -321,7 +321,7 @@ ecozmedian <- ecozgovexp_df |>
 
 ##### **Figure 4:** Median value trends of the government expenditure on education as percentage of GDP for different Income groups from 2015 to 2022.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 ggplotly(
   ggplot(
     ecozgovexp_df,
@@ -429,7 +429,7 @@ regmedian <- regosr_df |>
 
 ##### **Figure 5:** Median value of the out-of-school rate for children of primary school age for different region from 2015 to 2022.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 ggplotly(
   ggplot(
     regosr_df,
@@ -527,7 +527,7 @@ ecozmedian <- ecozosr_df |>
 
 ##### **Figure 6:** Median value of the out-of-school rate for children of primary school age for different Income groups from 2015 to 2022.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 ggplotly(
   ggplot(
     ecozosr_df,
@@ -606,7 +606,7 @@ Overall, the line graph highlights a serious problem that needs to be addressed.
 
 ## Analysis of the Completion rate, primary education, both sexes (%)
 
-```{r message=FALSE, warning=FALSE, paged.print=TRUE, echo=FALSE}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 crpeduc_df <- df |>
   filter(
     Year %in% seq(2015, 2021),
@@ -635,7 +635,7 @@ regmedian <- regcrpeduc_df |>
 
 ##### **Figure 7:** Median value trend of the ompletion rate, primary education, for different region from 2015 to 2022.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 ggplotly(
   regcrpeduc_df |>
     # filter(
@@ -720,9 +720,9 @@ ecozmedian <- ecozcrpeduc_df |>
 # ecozmedian
 ```
 
-##### **Figure 8:** Median value trend of the ompletion rate, primary education, for different Income groups from 2015 to 2022.
+##### **Figure 8:** Median value trend of the Completion rate, primary education, for different Income groups from 2015 to 2022.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 ggplotly(
   ggplot(
     ecozcrpeduc_df,
@@ -812,7 +812,7 @@ regmedian <- regnereceduc_df |>
 
 ##### **Figure 9:** Median value trend of the Net enrolment rate, early childhood education, for different region from 2015 to 2022.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 ggplotly(
   regnereceduc_df |>
     # filter(
@@ -896,7 +896,7 @@ ecozmedian <- ecoznereceduc_df |>
 
 ##### **Figure 10:** Median value trend of the Net enrolment rate, early childhood education, for different Income groups from 2015 to 2022.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 ggplotly(
   ggplot(
     ecoznereceduc_df,
@@ -986,7 +986,7 @@ regmedian <- regnerpprim_df |>
 
 ##### **Figure 11:** Median value trend of the Net enrolment rate, pre-primary, for different region from 2015 to 2022.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 ggplotly(
   regnerpprim_df |>
     # filter(
@@ -1070,7 +1070,7 @@ ecozmedian <- ecoznerpprim_df |>
 
 ##### **Figure 12:** Median value trend of the Net enrolment rate, pre-primary, for different Income groups from 2015 to 2022.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6}
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width = 9.5, fig.height = 6, out.width= "100%"}
 ggplotly(
   ggplot(
     ecoznereceduc_df,
